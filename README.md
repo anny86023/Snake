@@ -5,7 +5,11 @@ Snake Game
 #### iOS 14 以上
 #### Swift Version = 5.0
 
-![](https://i.imgur.com/F3D9OZw.png)
+You can try again after you die.
 
+<img src="https://i.imgur.com/F3D9OZw.png" width="400"/><br/>
 
-![](https://i.imgur.com/dSeQg91.png)
+Snake Game Screenshot.
+
+<img src="https://i.imgur.com/dSeQg91.png" width="400"/><br/>
+
