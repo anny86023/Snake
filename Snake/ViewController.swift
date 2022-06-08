@@ -14,7 +14,7 @@ class ViewController: UIViewController {
     
     var timer:Timer?
     
-    let size = 20
+    let gridSize = 20
     
     //範圍 CGFloat
     var areaWidth: CGFloat!
@@ -38,6 +38,8 @@ class ViewController: UIViewController {
     
     // 蛇身節點位置
     var points = [Point]()
+    
+    var snake: Snake?
 
     
     override func viewDidLoad() {
@@ -61,18 +63,22 @@ class ViewController: UIViewController {
         switch direction {
             case .up:
                 print("up")
+                self.snake?.direction = .up
                 self.direction = .up
             
             case .down:
                 print("down")
+                self.snake?.direction = .down
                 self.direction = .down
             
             case .left:
                 print("left")
+                self.snake?.direction = .left
                 self.direction = .left
             
             case .right:
                 print("right")
+                self.snake?.direction = .right
                 self.direction = .right
             
             default:
@@ -103,6 +109,7 @@ class ViewController: UIViewController {
     }
     
     func resetGame() {
+
         self.foodView.removeFromSuperview()
         
         for snake in snakeView {
@@ -110,46 +117,74 @@ class ViewController: UIViewController {
         }
         snakeView = [UIView]()
         points = [Point]()
+        
+        direction = .right
+        
     }
     
     func start(){
         self.resetGame()
         
-        points.append(Point(x: areaX / 2, y: areaY / 2))
-        snakeView.append(UIView.init(frame: CGRect(x: points[0].x * 20,
-                                                   y: points[0].y * 20,
-                                                   width: 20, height: 20)))
         
+        var points = [Point]()
+        points.append(Point(x: areaX / 2, y: areaY / 2))
         points.append(Point(x: (areaX / 2) - 1 , y: areaY / 2))
         
-        snakeView.append(UIView.init(frame: CGRect(x: (points[1].x) * 20,
-                                                   y: points[1].y * 20,
+        self.snake = Snake(points: points)
+        guard let snake = self.snake else { return }
+        
+//        self.points.append(Point(x: areaX / 2, y: areaY / 2))
+        snakeView.append(UIView.init(frame: CGRect(x: snake.points[0].x * 20,
+                                                   y: snake.points[0].y * 20,
+                                                   width: 20, height: 20)))
+        
+//        self.points.append(Point(x: (areaX / 2) - 1 , y: areaY / 2))
+        
+        snakeView.append(UIView.init(frame: CGRect(x: (snake.points[1].x) * 20,
+                                                   y: snake.points[1].y * 20,
                                                    width: 20, height: 20)))
         
         
-        snakeView[0].backgroundColor = #colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)
-        snakeView[1].backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
+        snakeView[0].backgroundColor = snake.headColor
+        snakeView[1].backgroundColor = snake.bodyColor
         
         self.areaView.insertSubview(snakeView[0], belowSubview: startButton)
-        self.areaView.insertSubview(snakeView[1], belowSubview: startButton)
+        self.areaView.insertSubview(snakeView[1], belowSubview: snakeView[0])
         
         self.makeNewFood()
-        
-        print("~~~~~ start point")
-        print(points)
-        print("===============")
         
         self.timer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
     }
           
     @objc func timerAction() {
         
-        if (points[0].x == foodX) && (points[0].y == foodY) {
-            print("碰到水果")
-            self.increaseSnakeLength()
+        guard let newHeadPoint = self.snake?.getNewHeadPoint() else { return }
+//
+//        if (newHeadPoint.x == foodX) && (newHeadPoint.y == foodY) {
+//            print("碰到水果")
+//            self.snake?.increaseSnakeLength(foodX: foodX, foodY: foodY)
+//            self.increaseSnakeView()
+//        }
+        
+        self.snake?.move()
+        
+       
+        if self.snake?.isHitBody(newHeadPoint: newHeadPoint) == true ||
+            self.checkArea(newHeadPoint: newHeadPoint) == true {
+            
+            self.endGame()
+            return
         }
         
-        self.move()
+        
+        if (newHeadPoint.x == foodX) && (newHeadPoint.y == foodY) {
+            print("碰到水果")
+            self.snake?.increaseSnakeLength(foodX: foodX, foodY: foodY)
+            self.increaseSnakeView()
+        }
+        
+        
+        
         self.drewSnake()
     }
     
@@ -175,16 +210,21 @@ class ViewController: UIViewController {
             
         }
         
-        points.insert(newPoint, at: 0)
-        points.remove(at: points.count - 1)
+        if self.checkArea(newHeadPoint: newPoint) {
+            points.insert(newPoint, at: 0)
+            points.removeLast()
+        }
+        
+//        points.insert(newPoint, at: 0)
+//        points.remove(at: points.count - 1)
 
         print(points)
         print("~~~~~")
-        
-        self.checkArea()
     }
     
     func drewSnake() {
+        
+        guard let points = self.snake?.points else { return }
         
         for i in 0..<points.count {
             
@@ -197,6 +237,8 @@ class ViewController: UIViewController {
     func makeNewFood(){
         foodX = Int.random(in: 0..<areaX - 1)
         foodY = Int.random(in: 0..<areaY - 1)
+        
+        guard let points = self.snake?.points else { return }
 
         for point in points {
             if (point.x == foodX) && (point.y == foodY) {
@@ -211,44 +253,53 @@ class ViewController: UIViewController {
         foodView.frame = CGRect(x: foodX * 20, y: foodY * 20, width: 20, height: 20)
         foodView.backgroundColor = .red
         
-        self.areaView.insertSubview(foodView, belowSubview: startButton)
+        self.areaView.insertSubview(foodView, belowSubview: snakeView[0])
     }
     
-    func increaseSnakeLength(){
+    func increaseSnakeView(){
         
-        points.append(Point(x: foodX, y: foodY))
+//        points.append(Point(x: foodX, y: foodY))
+        
+//        snakeView.append(UIView.init(frame: CGRect(x: foodX * 20,
+//                                                   y: foodY * 20,
+//                                                   width: 20, height: 20)))
+        
         snakeView.append(UIView.init(frame: CGRect(x: foodX * 20,
                                                    y: foodY * 20,
                                                    width: 20, height: 20)))
+        
         snakeView[snakeView.count - 1].backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
         
-        self.areaView.insertSubview(snakeView[snakeView.count - 1], belowSubview: startButton)
+        self.areaView.insertSubview(snakeView[snakeView.count - 1], belowSubview: snakeView[0])
         
         self.makeNewFood()
         
     }
     
-    func checkArea(){
+    func checkArea(newHeadPoint: Point) -> Bool {
         
         // 碰到範圍結束遊戲
-        if Int(points[0].x) < 0 || Int(points[0].x + 1) * 20 >= Int(areaWidth) {
+        if Int(newHeadPoint.x) < 0 || Int(newHeadPoint.x + 1) * 20 >= Int(areaWidth) {
             print("!!!!! Game Over")
-            self.endGame()
+//            self.endGame()
+            return true
         }
-        if Int(points[0].y) < 0 || Int(points[0].y + 1) * 20 >= Int(areaHeight) {
+        if Int(newHeadPoint.y) < 0 || Int(newHeadPoint.y + 1) * 20 >= Int(areaHeight) {
             print("!!!!! Game Over")
-            self.endGame()
+//            self.endGame()
+            return true
         }
         
-        // 碰到蛇自己身體結束遊戲
-        let headPoint = points[0]
-        for bodyPoint in self.points[1..<points.count]{
-            if (bodyPoint.x == headPoint.x) && (bodyPoint.y == headPoint.y) {
-                print("!!!!! Game Over")
-                self.endGame()
-            }
-        }
+//        // 碰到蛇自己身體結束遊戲
+//        for bodyPoint in self.points[1..<points.count]{
+//            if (bodyPoint.x == newHeadPoint.x) && (bodyPoint.y == newHeadPoint.y) {
+//                print("!!!!! Game Over")
+//                self.endGame()
+//                return true
+//            }
+//        }
         
+        return false
     }
     
     func endGame() {
@@ -256,16 +307,4 @@ class ViewController: UIViewController {
         self.timer!.invalidate()
         self.timer = nil
     }
-}
-
-enum Direction: Int {
-    case left
-    case right
-    case up
-    case down
-}
-
-struct Point {
-    var x: Int
-    var y: Int
 }
