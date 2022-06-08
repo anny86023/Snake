@@ -36,19 +36,15 @@ class Snake {
         
         switch direction {
             case .up:
-                print("往上移動")
                 newPoint.y -= 1
             
             case .down:
-                print("往下移動")
                 newPoint.y += 1
             
             case .left:
-                print("往左移動")
                 newPoint.x -= 1
     
             case .right:
-                print("往右移動")
                 newPoint.x += 1
             
         }
@@ -57,21 +53,20 @@ class Snake {
     }
        
     func move() {
-        points.removeLast()
         let head = getNewHeadPoint()
-        points.insert(head, at: 0)
+        self.points.insert(head, at: 0)
+        self.points.removeLast()
 
     }
     
-    func increaseSnakeLength(foodX: Int, foodY: Int){
-        points.append(Point(x: foodX, y: foodY))
+    func increaseSnakeLength(point: Point){
+        self.points.append(point)
     }
     
     func isHitBody(newHeadPoint: Point) -> Bool {
         
         for bodyPoint in self.points[1..<points.count]{
             if (bodyPoint.x == newHeadPoint.x) && (bodyPoint.y == newHeadPoint.y) {
-                print("!!!!! 撞到身體")
                 return true
             }
         }

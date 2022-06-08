@@ -27,7 +27,7 @@
                                             <fontDescription key="titleFontDescription" type="boldSystem" pointSize="30"/>
                                         </buttonConfiguration>
                                         <connections>
-                                            <action selector="startGame:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Bkj-jM-wUP"/>
+                                            <action selector="start:" destination="BYZ-38-t0r" eventType="touchUpInside" id="mhx-0O-Nz0"/>
                                         </connections>
                                     </button>
                                 </subviews>
