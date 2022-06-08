@@ -150,30 +150,31 @@ class ViewController: UIViewController {
     }
     
     func makeNewFood(){
-        
-        var isInSnakeBody = false
-        
-        let x = Int.random(in: 0..<areaX)
-        let y = Int.random(in: 0..<areaY)
-            
+        var x = 0, y = 0
         guard let points = self.snake?.points else { return }
 
-        for point in points {
-            if (point.x == x) && (point.y == y) {
-                isInSnakeBody = true
+        while (true){
+            var isInSnakeBody = false
+            x = Int.random(in: 0..<areaX)
+            y = Int.random(in: 0..<areaX)
+            
+            for point in points {
+                if (point.x == x) && (point.y == y) {
+                    isInSnakeBody = true
+                    break
+                }
+            }
+            
+            if !isInSnakeBody{
                 break
             }
         }
-        
-        if !isInSnakeBody {
-            foodPoint = Point(x: x, y: y)
-            foodView.frame = CGRect(x: x * gridSize, y: y * gridSize, width: gridSize, height: gridSize)
-            foodView.backgroundColor = .red
-            self.areaView.insertSubview(foodView, belowSubview: snakeView[0])
-            
-        }else{
-            self.makeNewFood()
-        }
+
+        foodPoint = Point(x: x, y: y)
+        foodView.frame = CGRect(x: x * gridSize, y: y * gridSize, width: gridSize, height: gridSize)
+        foodView.backgroundColor = .red
+        self.areaView.insertSubview(foodView, belowSubview: snakeView[0])
+
     }
     
     func isHitArea(newHeadPoint: Point) -> Bool {
