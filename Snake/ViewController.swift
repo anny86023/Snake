@@ -74,8 +74,8 @@ class ViewController: UIViewController {
         areaWidth = areaView.frame.size.width
         areaHeight = areaView.frame.size.height
         
-        areaX = Int(areaWidth) / 20
-        areaY = Int(areaHeight) / 20
+        areaX = Int(areaWidth) / gridSize
+        areaY = Int(areaHeight) / gridSize
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -166,9 +166,8 @@ class ViewController: UIViewController {
         }
         
         if !isInSnakeBody {
-            foodPoint = Point(x: x, y: y)         
-            foodView.frame = CGRect(x: x * gridSize, y: y * gridSize,
-                                    width: gridSize, height: gridSize)
+            foodPoint = Point(x: x, y: y)
+            foodView.frame = CGRect(x: x * gridSize, y: y * gridSize, width: gridSize, height: gridSize)
             foodView.backgroundColor = .red
             self.areaView.insertSubview(foodView, belowSubview: snakeView[0])
             
@@ -179,10 +178,10 @@ class ViewController: UIViewController {
     
     func isHitArea(newHeadPoint: Point) -> Bool {
         
-        if Int(newHeadPoint.x) < 0 || Int(newHeadPoint.x + 1) * 20 >= Int(areaWidth) {
+        if Int(newHeadPoint.x) < 0 || Int(newHeadPoint.x + 1) * gridSize > Int(areaWidth) {
             return true
         }
-        if Int(newHeadPoint.y) < 0 || Int(newHeadPoint.y + 1) * 20 >= Int(areaHeight) {
+        if Int(newHeadPoint.y) < 0 || Int(newHeadPoint.y + 1) * gridSize > Int(areaHeight) {
             return true
         }
 
@@ -215,8 +214,8 @@ class ViewController: UIViewController {
         
         for i in 0..<points.count {
             
-            snakeView[i].frame = CGRect(x: points[i].x * 20, y: points[i].y * 20,
-                                        width: 20, height: 20)
+            snakeView[i].frame.origin.x = CGFloat(points[i].x * gridSize)
+            snakeView[i].frame.origin.y = CGFloat(points[i].y * gridSize)
         }
     }
 }
