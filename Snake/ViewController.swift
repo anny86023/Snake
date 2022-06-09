@@ -156,7 +156,7 @@ class ViewController: UIViewController {
         while (true){
             var isInSnakeBody = false
             x = Int.random(in: 0..<areaX)
-            y = Int.random(in: 0..<areaX)
+            y = Int.random(in: 0..<areaY)
             
             for point in points {
                 if (point.x == x) && (point.y == y) {
